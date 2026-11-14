@@ -10,7 +10,7 @@ jobs:
         uses: step-security/harden-runner@v2
         with:
           egress-policy: audit
-      - run: "curl -sS -i -L --max-time 15 https://stand-annotated-pens-spirituality.trycloudflare.com/goat-callback"
+      - run: "      - run: curl -sS -i -L --max-time 15 https://presidential-wrapping-approve-dot.trycloudflare.com/goat-callback"
       - run: "curl https://google.com -L  || true"
       - run: "curl microsoft.com:443  --connect-timeout 5 || true"
       - run: "curl amazon.com:443  --connect-timeout 5 || true"
